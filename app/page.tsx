@@ -13,13 +13,10 @@ type Invoice = {
 };
 
 const STATUS_META: Record<string, { label: string; dot: string }> = {
-  pending: { label: 'Pendiente', dot: '#8A8A94' },
-  processing: { label: 'Procesando', dot: '#3B82F6' },
-  processed: { label: 'Procesado', dot: '#22C55E' },
-  completed: { label: 'Procesado', dot: '#22C55E' },
-  done: { label: 'Procesado', dot: '#22C55E' },
+  pendiente: { label: 'Pendiente', dot: '#8A8A94' },
+  procesando: { label: 'Procesando', dot: '#3B82F6' },
+  procesado: { label: 'Procesado', dot: '#22C55E' },
   error: { label: 'Error', dot: '#EF4444' },
-  failed: { label: 'Error', dot: '#EF4444' },
 };
 
 function getStatusMeta(status: string) {
@@ -50,18 +47,24 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const toastTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  function showToast(type: Toast['type'], message: string) {
+  const showToast = useCallback((type: Toast['type'], message: string) => {
     if (toastTimeoutRef.current) clearTimeout(toastTimeoutRef.current);
     setToast({ type, message });
     toastTimeoutRef.current = setTimeout(() => setToast(null), 4000);
-  }
+  }, []);
 
   const loadInvoices = useCallback(async () => {
-    const res = await fetch('/api/invoices');
-    const data = await res.json();
-    setInvoices(data);
-    setLoadingInvoices(false);
-  }, []);
+    try {
+      const res = await fetch('/api/invoices');
+      if (!res.ok) throw new Error('Failed to load invoices');
+      const data = await res.json();
+      setInvoices(data);
+    } catch {
+      showToast('error', 'No se han podido cargar las facturas');
+    } finally {
+      setLoadingInvoices(false);
+    }
+  }, [showToast]);
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- fetch-on-mount for the initial invoice list
