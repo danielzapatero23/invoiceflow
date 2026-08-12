@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(wsl.exe -e bash -lc \"source ~/.nvm/nvm.sh 2>/dev/null; cd /home/alumno/invoiceflow && npx eslint app/page.tsx\")"
+    ]
+  }
+}

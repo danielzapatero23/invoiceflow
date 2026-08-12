@@ -10,6 +10,7 @@ datasource db {
 model Invoice {
   id          String   @id @default(cuid())
   fileName    String
+  fileSize    Int?
   blobUrl     String
   uploadedAt  DateTime @default(now())
   status      String   @default("pending")

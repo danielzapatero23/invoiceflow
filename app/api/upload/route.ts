@@ -18,6 +18,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   const invoice = await prisma.invoice.create({
     data: {
       fileName: file.name,
+      fileSize: file.size,
       blobUrl: blob.url,
     },
   });
