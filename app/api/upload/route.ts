@@ -1,5 +1,6 @@
 import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
 
 export async function POST(request: Request): Promise<NextResponse> {
   const form = await request.formData();
@@ -14,5 +15,12 @@ export async function POST(request: Request): Promise<NextResponse> {
     addRandomSuffix: true,
   });
 
-  return NextResponse.json(blob);
+  const invoice = await prisma.invoice.create({
+    data: {
+      fileName: file.name,
+      blobUrl: blob.url,
+    },
+  });
+
+  return NextResponse.json(invoice);
 }

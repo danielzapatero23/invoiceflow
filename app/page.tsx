@@ -1,10 +1,28 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+type Invoice = {
+  id: string;
+  fileName: string;
+  blobUrl: string;
+  uploadedAt: string;
+  status: string;
+};
 
 export default function Home() {
   const [uploading, setUploading] = useState(false);
-  const [url, setUrl] = useState<string | null>(null);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+
+  async function loadInvoices() {
+    const res = await fetch('/api/invoices');
+    const data = await res.json();
+    setInvoices(data);
+  }
+
+  useEffect(() => {
+    loadInvoices();
+  }, []);
 
   async function handleUpload(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -17,13 +35,14 @@ export default function Home() {
     const formData = new FormData();
     formData.append('file', file);
 
-    const res = await fetch('/api/upload', {
+    await fetch('/api/upload', {
       method: 'POST',
       body: formData,
     });
-    const data = await res.json();
-    setUrl(data.url);
+
     setUploading(false);
+    form.reset();
+    loadInvoices();
   }
 
   return (
@@ -38,14 +57,16 @@ export default function Home() {
         </button>
       </form>
 
-      {url && (
-        <p>
-          Subido correctamente:{' '}
-          <a href={url} target="_blank" rel="noopener noreferrer">
-            ver PDF
-          </a>
-        </p>
-      )}
+      <h2 style={{ marginTop: '2rem' }}>Facturas subidas</h2>
+      {invoices.length === 0 && <p>Todavía no has subido ninguna factura.</p>}
+      <ul style={{ listStyle: 'none', padding: 0 }}>
+        {invoices.map((invoice) => (
+          <li key={invoice.id} style={{ padding: '0.5rem 0', borderBottom: '1px solid #333' }}>
+            <strong>{invoice.fileName}</strong> — {invoice.status} —{' '}
+            {new Date(invoice.uploadedAt).toLocaleString('es-ES')}
+          </li>
+        ))}
+      </ul>
     </main>
   );
 }
